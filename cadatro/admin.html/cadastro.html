@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cadastro e Admin</title>
+    <style>
+        /* --- ESTILOS GERAIS --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* --- FORMULÁRIO DE CADASTRO --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: #4a90e2;
+        }
+
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        /* --- ÁREA ADMINISTRATIVA --- */
+        .admin-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #fff;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #555;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn-delete {
+            background-color: #e74c3c;
+            padding: 6px 12px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+
+        .empty-msg {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Tela de Cadastro -->
+        <section class="cadastro-section">
+            <h2>Formulário de Cadastro</h2>
+            <form id="cadastroForm">
+                <div class="form-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" required placeholder="Digite seu nome">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" required placeholder="Digite seu e-mail">
+                </div>
+
+                <div class="form-group">
+                    <label for="perfil">Perfil de Acesso</label>
+                    <select id="perfil" required>
+                        <option value="Usuário">Usuário Comum</option>
+                        <option value="Moderador">Moderador</option>
+                        <option value="Administrador">Administrador</option>
+                    </select>
+                </div>
+
+                <button type="submit">Cadastrar Usuário</button>
+            </form>
+        </section>
+
+        <!-- Área Administrativa -->
+        <section class="admin-section">
+            <h2>Painel Administrativo (Usuários Cadastrados)</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Perfil</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaUsuarios">
+                        <!-- Os dados do JavaScript vão aparecer aqui -->
+                    </tbody>
+                </table>
+                <div id="mensagemVazia" class="empty-msg">Nenhum usuário cadastrado ainda.</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- --- LÓGICA EM JAVASCRIPT --- -->
+    <script>
+        // Array global para simular o banco de dados em memória
+        let usuarios = [];
+        let idContador = 1;
+
+        // Mapeamento dos elementos do DOM
+        const form = document.getElementById('cadastroForm');
+        const tabela = document.getElementById('tabelaUsuarios');
+        const mensagemVazia = document.getElementById('mensagemVazia');
+
+        // Função para atualizar a tabela na área administrativa
+        function atualizarTabelaAdmin() {
+            // Limpa as linhas atuais da tabela
+            tabela.innerHTML = '';
+
+            if (usuarios.length === 0) {
+                mensagemVazia.style.display = 'block';
+                return;
+            }
+
+            mensagemVazia.style.display = 'none';
+
+            // Alimenta a tabela com os usuários do array
+            usuarios.forEach(usuario => {
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td>${usuario.id}</td>
+                    <td>${usuario.nome}</td>
+                    <td>${usuario.email}</td>
+                    <td>${usuario.perfil}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deletarUsuario(${usuario.id})">Excluir</button>
+                    </td>
+                `;
+
+                tabela.appendChild(tr);
+            });
+        }
+
+        // Função para capturar o envio do formulário
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede a página de recarregar
+
+            // Captura os valores dos inputs
+            const nomeValue = document.getElementById('nome').value;
+            const emailValue = document.getElementById('email').value;
+            const perfilValue = document.getElementById('perfil').value;
+
+            // Cria o objeto do novo usuário
+            const novoUsuario = {
+                id: idContador++,
+                nome: nomeValue,
+                email: emailValue,
+                perfil: perfilValue
+            };
+
+            // Adiciona no "banco de dados" temporário
+            usuarios.push(novoUsuario);
+
+            // Reseta os campos do formulário
+            form.reset();
+
+            // Atualiza a listagem na área administrativa
+            atualizarTabelaAdmin();
+        });
+
+        // Função para excluir um usuário pelo ID
+        function deletarUsuario(id) {
+            // Filtra o array removendo o usuário com o ID correspondente
+            usuarios = usuarios.filter(usuario => usuario.id !== id);
+            
+            // Atualiza a interface
+            atualizarTabelaAdmin();
+        }
+    </script>
+</body>
+</html>
